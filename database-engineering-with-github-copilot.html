@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en" data-color-mode="light" data-light-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Copilot for Database Engineers &mdash; The Complete VS Code Guide</title>
+  <link href="https://unpkg.com/@primer/css@21/dist/primer.css" rel="stylesheet" />
+  <style>
+    :root {
+      --brand-copilot: #6e40c9;
+      --brand-copilot-dark: #553098;
+      --brand-mssql: #e8383d;
+      --brand-mssql-dark: #b52e32;
+      --brand-pgsql: #336791;
+      --brand-pgsql-dark: #254a6b;
+      --brand-dab: #0078d4;
+      --brand-dab-dark: #005a9e;
+      --brand-success: #2da44e;
+      --brand-success-dark: #1a7f37;
+      --brand-warning: #9a6700;
+      --brand-danger: #cf222e;
+      --hero-gradient: linear-gradient(135deg, #0d1117 0%, #1a0a2e 40%, #0d1117 70%, #0a1628 100%);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; margin: 0; scroll-behavior: smooth; }
+    .hero { background: var(--hero-gradient); color: #f0f6fc; padding: 80px 0 64px; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(110,64,201,0.2) 0%, transparent 70%); border-radius: 50%; }
+    .hero::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,56,61,0.12) 0%, transparent 70%); border-radius: 50%; }
+    .hero h1 { font-size: 42px; font-weight: 800; line-height: 1.1; max-width: 900px; position: relative; }
+    .hero h1 .highlight { color: var(--brand-copilot); }
+    .hero h1 .highlight-sql { color: var(--brand-mssql); }
+    .hero h1 .highlight-pg { color: var(--brand-pgsql); }
+    .hero .subtitle { font-size: 18px; color: #8b949e; max-width: 820px; margin-top: 16px; line-height: 1.6; }
+    .hero .badge-row { margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .section { padding: 48px 0; }
+    .section-alt { background-color: #f6f8fa; }
+    .section-dark { background: #0d1117; color: #f0f6fc; }
+    .section-title { font-size: 30px; font-weight: 700; margin-bottom: 8px; }
+    .section-lead { font-size: 17px; color: #656d76; margin-bottom: 32px; max-width: 820px; line-height: 1.6; }
+    .section-dark .section-lead { color: #8b949e; }
+    .feature-card { border: 1px solid #d0d7de; border-radius: 12px; padding: 24px; height: 100%; transition: box-shadow 0.2s, border-color 0.2s; background: #fff; }
+    .feature-card:hover { border-color: var(--brand-copilot); box-shadow: 0 4px 12px rgba(110,64,201,0.12); }
+    .feature-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: #656d76; line-height: 1.5; }
+    .feature-card.sql-card:hover { border-color: var(--brand-mssql); box-shadow: 0 4px 12px rgba(232,56,61,0.12); }
+    .feature-card.pg-card:hover { border-color: var(--brand-pgsql); box-shadow: 0 4px 12px rgba(51,103,145,0.12); }
+    .feature-card.dab-card:hover { border-color: var(--brand-dab); box-shadow: 0 4px 12px rgba(0,120,212,0.12); }
+    .code-block { background: #0d1117; border-radius: 8px; padding: 16px; overflow-x: auto; margin: 16px 0; }
+    .code-block code { color: #f0f6fc; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; line-height: 1.6; white-space: pre; }
+    .code-block .comment { color: #8b949e; }
+    .code-block .keyword { color: #ff7b72; }
+    .code-block .string { color: #a5d6ff; }
+    .code-block .function { color: #d2a8ff; }
+    .code-block .number { color: #79c0ff; }
+    .callout { border-left: 4px solid var(--brand-copilot); background: #f5f0ff; border-radius: 0 8px 8px 0; padding: 20px 24px; margin: 24px 0; }
+    .callout p { font-size: 15px; line-height: 1.6; color: #24292f; margin: 0; }
+    .callout strong { color: var(--brand-copilot-dark); }
+    .callout-blue { border-left-color: var(--brand-dab); background: #ddf4ff; }
+    .callout-blue strong { color: var(--brand-dab-dark); }
+    .callout-warn { border-left-color: var(--brand-warning); background: #fff8c5; }
+    .callout-warn strong { color: var(--brand-warning); }
+    .callout-danger { border-left-color: var(--brand-danger); background: #ffebe9; }
+    .callout-danger strong { color: var(--brand-danger); }
+    .callout-success { border-left-color: var(--brand-success); background: #dafbe1; }
+    .callout-success strong { color: var(--brand-success-dark); }
+    .callout-sql { border-left-color: var(--brand-mssql); background: #fff0f0; }
+    .callout-sql strong { color: var(--brand-mssql-dark); }
+    .callout-pg { border-left-color: var(--brand-pgsql); background: #e8f0f8; }
+    .callout-pg strong { color: var(--brand-pgsql-dark); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } .hero h1 { font-size: 28px; } }
+    .top-nav { background: #0d1117; border-bottom: 1px solid #30363d; padding: 12px 0; position: sticky; top: 0; z-index: 100; }
+    .top-nav a { color: #f0f6fc; text-decoration: none; font-size: 13px; font-weight: 500; padding: 6px 10px; border-radius: 6px; }
+    .top-nav a:hover { background: #21262d; }
+    .nav-inner { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .nav-logo { font-weight: 700; font-size: 15px; margin-right: 12px; color: #f0f6fc; display: flex; align-items: center; gap: 6px; }
+    .footer { background: #0d1117; color: #8b949e; padding: 40px 0; }
+    .footer a { color: var(--brand-copilot); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    table.gov-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0; }
+    table.gov-table th { background: #f6f8fa; border-bottom: 2px solid #d0d7de; padding: 12px; text-align: left; font-weight: 600; }
+    table.gov-table td { padding: 12px; border-bottom: 1px solid #d0d7de; color: #656d76; }
+    table.gov-table tr:hover { background: #f6f8fa; }
+    table.gov-table code { background: #eff1f3; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #24292f; }
+    .prompt-block { background: #f5f0ff; border: 1px solid #d8b4fe; border-radius: 8px; padding: 16px; margin: 12px 0; }
+    .prompt-block code { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; color: #553098; display: block; white-space: pre-wrap; }
+    .prompt-block .prompt-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8b949e; font-weight: 600; margin-bottom: 8px; }
+    .tool-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin: 2px 4px 2px 0; }
+    .tool-badge.mssql { background: #fff0f0; color: var(--brand-mssql); }
+    .tool-badge.pgsql { background: #e8f0f8; color: var(--brand-pgsql); }
+    .tool-badge.copilot { background: #f5f0ff; color: var(--brand-copilot); }
+    .tool-badge.dab { background: #ddf4ff; color: var(--brand-dab); }
+    .tool-badge.mcp { background: #dafbe1; color: var(--brand-success-dark); }
+    .mode-card { border: 1px solid #d0d7de; border-radius: 12px; padding: 24px; background: #fff; transition: all 0.2s; }
+    .mode-card:hover { border-color: var(--brand-copilot); box-shadow: 0 4px 12px rgba(110,64,201,0.12); }
+    .mode-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .mode-card .mode-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+    .scenario-card { border: 1px solid #d0d7de; border-radius: 12px; padding: 20px; background: #fff; margin-bottom: 16px; }
+    .scenario-card:hover { border-color: var(--brand-copilot); box-shadow: 0 2px 8px rgba(110,64,201,0.08); }
+    .scenario-card h4 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+    .scenario-card p { font-size: 14px; color: #656d76; line-height: 1.5; margin: 0 0 12px; }
+    .ref-link { display: block; font-size: 13px; color: var(--brand-dab); text-decoration: none; padding: 4px 0; }
+    .ref-link:hover { text-decoration: underline; }
+    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: var(--brand-copilot); color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-number.sql { background: var(--brand-mssql); }
+    .step-number.pg { background: var(--brand-pgsql); }
+    .workflow-step { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; }
+    .workflow-step .step-content h4 { margin: 4px 0 6px; font-size: 16px; }
+    .workflow-step .step-content p { font-size: 14px; color: #656d76; line-height: 1.5; margin: 0; }
+    .icon-circle { width: 48px; height: 48px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .icon-circle.copilot { background: #f5f0ff; }
+    .icon-circle.sql { background: #fff0f0; }
+    .icon-circle.pg { background: #e8f0f8; }
+    .icon-circle.dab { background: #ddf4ff; }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="top-nav"><div class="container-xl px-3"><div class="nav-inner">
+  <span class="nav-logo"><svg height="16" viewBox="0 0 16 16" width="16" fill="#f0f6fc" style="margin-right:4px"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg> Copilot for DB Engineers</span>
+  <a href="#toolkit">Toolkit</a>
+  <a href="#copilot-modes">Copilot Modes</a>
+  <a href="#mssql-features">MSSQL Features</a>
+  <a href="#pgsql-features">PostgreSQL</a>
+  <a href="#data-api-builder">Data API Builder</a>
+  <a href="#schema-designer">Schema Designer</a>
+  <a href="#query-optimization">Query Optimization</a>
+  <a href="#code-generation">Code Generation</a>
+  <a href="#security">Security</a>
+  <a href="#scenarios">Scenarios</a>
+  <a href="#copilot-skills">Skills</a>
+  <a href="#references">References</a>
+</div></div></nav>
+
+<!-- Hero -->
+<section class="hero"><div class="container-xl px-3">
+  <p style="font-size:13px; text-transform:uppercase; letter-spacing:2px; color:#8b949e; margin-bottom:12px; font-weight:600;">Database Engineering with AI &mdash; 2026</p>
+  <h1><span class="highlight">GitHub Copilot</span> for <span class="highlight-sql">Database Engineers</span> &mdash; The Complete VS Code Guide</h1>
+  <p class="subtitle">A comprehensive guide to AI-assisted database development using <strong>GitHub Copilot</strong>, the <strong>MSSQL</strong> and <strong>PostgreSQL</strong> extensions, <strong>MCP servers</strong>, <strong>Data API builder</strong>, and <strong>Copilot Skills</strong> for SQL optimization and code review. Write, optimize, migrate, and secure SQL from a single editor.</p>
+  <div class="badge-row">
+    <span class="Label" style="background:#f5f0ff;color:#6e40c9;">GitHub Copilot</span>
+    <span class="Label" style="background:#fff0f0;color:#e8383d;">SQL Server</span>
+    <span class="Label" style="background:#e8f0f8;color:#336791;">PostgreSQL</span>
+    <span class="Label" style="background:#ddf4ff;color:#0078d4;">Data API Builder</span>
+    <span class="Label" style="background:#dafbe1;color:#1a7f37;">MCP Servers</span>
+    <span class="Label">Agent Mode</span>
+    <span class="Label">Schema Designer</span>
+    <span class="Label">Query Optimizer</span>
+  </div>
+</div></section>
+
+<!-- ============================================================== -->
+<!-- SECTION 1: TOOLKIT -->
+<!-- ============================================================== -->
+<section id="toolkit" class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">Your AI Database Toolkit</h2>
+  <p class="section-lead">Four VS Code extensions and their built-in MCP servers form the foundation. Install these before anything else.</p>
+
+  <div class="grid-4" style="margin-bottom:32px;">
+    <div class="feature-card">
+      <h3>
+        <svg height="16" viewBox="0 0 16 16" width="16" fill="#6e40c9" style="vertical-align:middle;margin-right:4px"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>
+        GitHub Copilot
+      </h3>
+      <p>AI pair programmer powering inline completions, chat, and agent mode across every file in your workspace.</p>
+      <span class="tool-badge copilot">Chat</span>
+      <span class="tool-badge copilot">Inline</span>
+      <span class="tool-badge copilot">Agent Mode</span>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F4BE; MSSQL Extension</h3>
+      <p>Connect to SQL Server, Azure SQL, and Fabric. Includes <code>@mssql</code> chat participant, Agent Mode tools, Schema Designer, and Data API builder.</p>
+      <span class="tool-badge mssql">ms-mssql.mssql</span>
+      <span class="tool-badge mcp">MCP Tools</span>
+    </div>
+    <div class="feature-card pg-card">
+      <h3>&#x1F418; PostgreSQL Extension</h3>
+      <p>Connect to any PostgreSQL instance. Includes <code>@pgsql</code> chat participant, Agent Mode tools, schema visualization, query plan viewer, and metrics dashboard.</p>
+      <span class="tool-badge pgsql">ms-ossdata.vscode-pgsql</span>
+      <span class="tool-badge mcp">MCP Tools</span>
+    </div>
+    <div class="feature-card dab-card">
+      <h3>&#x26A1; Data API Builder</h3>
+      <p>Generate REST, GraphQL, and MCP endpoints from your database tables with a visual UI or natural language. Deploy locally via Docker.</p>
+      <span class="tool-badge dab">Built into MSSQL</span>
+      <span class="tool-badge mcp">REST / GraphQL / MCP</span>
+    </div>
+  </div>
+
+  <h3 class="h4 mb-3">Extension Capabilities at a Glance</h3>
+  <table class="gov-table">
+    <thead>
+      <tr><th>Capability</th><th>MSSQL Extension</th><th>PostgreSQL Extension</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Copilot Chat Participant</td><td><code>@mssql</code></td><td><code>@pgsql</code></td></tr>
+      <tr><td>Agent Mode Tools</td><td>connect, disconnect, list_servers, list_databases, list_tables, list_views, list_functions, list_schemas, show_schema, run_query, change_database, get_connection_details</td><td>connect, run queries, create tables, design schemas, import CSV, run SQL</td></tr>
+      <tr><td>Schema Designer</td><td>Visual canvas with Copilot chat integration (preview)</td><td>Schema visualization</td></tr>
+      <tr><td>Query Plan Viewer</td><td>Estimated/actual execution plans with Copilot analysis</td><td>Interactive node graph, icicle chart, sortable table, raw source with Copilot analysis</td></tr>
+      <tr><td>Data API Builder</td><td>Built-in REST, GraphQL, MCP endpoint generator</td><td>&mdash;</td></tr>
+      <tr><td>Server Dashboard</td><td>&mdash;</td><td>Performance metrics with Copilot intelligence</td></tr>
+      <tr><td>Oracle Migration</td><td>&mdash;</td><td>Schema and application conversion (preview)</td></tr>
+      <tr><td>Docker Integration</td><td>Local SQL Server containers</td><td>Create PostgreSQL in Docker</td></tr>
+      <tr><td>Azure Integration</td><td>Azure SQL, Fabric, Managed Instance</td><td>Azure Database for PostgreSQL, Entra auth</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="h4 mt-4 mb-3">MCP Servers &mdash; What They Provide</h3>
+  <p style="font-size:14px;color:#656d76;margin-bottom:16px;">Model Context Protocol (MCP) servers let GitHub Copilot interact directly with your databases. Each extension contributes tools that Copilot can invoke in Agent Mode or through chat.</p>
+
+  <div class="grid-2">
+    <div class="callout-sql callout">
+      <p><strong>MSSQL MCP Tools</strong><br>
+      <code>mssql_connect</code> &middot; <code>mssql_disconnect</code> &middot; <code>mssql_list_servers</code> &middot; <code>mssql_list_databases</code> &middot; <code>mssql_list_tables</code> &middot; <code>mssql_list_views</code> &middot; <code>mssql_list_functions</code> &middot; <code>mssql_list_schemas</code> &middot; <code>mssql_run_query</code> &middot; <code>mssql_change_database</code> &middot; <code>mssql_get_connection_details</code> &middot; <code>mssql_schema_designer</code> &middot; <code>mssql_dab</code></p>
+    </div>
+    <div class="callout-pg callout">
+      <p><strong>PostgreSQL MCP Tools</strong><br>
+      <code>mc_pgsql_connect</code> &middot; <code>mc_pgsql_disconnect</code> &middot; <code>mc_pgsql_query</code> &middot; <code>mc_pgsql_modify</code> &middot; <code>mc_pgsql_db_context</code> &middot; <code>mc_pgsql_list_databases</code> &middot; <code>mc_pgsql_list_connection_profiles</code> &middot; <code>mc_pgsql_query_plan</code> &middot; <code>mc_pgsql_visualize_schema</code> &middot; <code>mc_pgsql_describe_csv</code> &middot; <code>mc_pgsql_bulk_load_csv</code></p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 2: COPILOT MODES -->
+<!-- ============================================================== -->
+<section id="copilot-modes" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">GitHub Copilot Modes for Database Work</h2>
+  <p class="section-lead">GitHub Copilot offers three interaction surfaces. Each mode unlocks different database capabilities depending on how you engage.</p>
+
+  <div class="grid-3" style="margin-bottom:32px;">
+    <div class="mode-card">
+      <span class="mode-icon">&#x1F4AC;</span>
+      <h3>Ask Mode (<code>@mssql</code> / <code>@pgsql</code>)</h3>
+      <p style="font-size:14px;color:#656d76;line-height:1.6;">Chat with your database using the chat participant. Type <code>@mssql</code> or <code>@pgsql</code> followed by your question. Schema-aware suggestions, query generation, and explanations &mdash; all scoped to your connected database.</p>
+      <div style="margin-top:12px;">
+        <span class="tool-badge copilot">Schema Aware</span>
+        <span class="tool-badge copilot">Conversational</span>
+      </div>
+    </div>
+    <div class="mode-card">
+      <span class="mode-icon">&#x1F916;</span>
+      <h3>Agent Mode</h3>
+      <p style="font-size:14px;color:#656d76;line-height:1.6;">Copilot autonomously selects and executes MSSQL/PostgreSQL tools. Connect to databases, run queries, explore schemas, and modify data &mdash; all through natural language with user confirmation before each action.</p>
+      <div style="margin-top:12px;">
+        <span class="tool-badge mcp">Tool Execution</span>
+        <span class="tool-badge copilot">Autonomous</span>
+      </div>
+    </div>
+    <div class="mode-card">
+      <span class="mode-icon">&#x2728;</span>
+      <h3>Inline Suggestions</h3>
+      <p style="font-size:14px;color:#656d76;line-height:1.6;">Type T-SQL or PL/pgSQL in the editor and receive real-time completions. Highlight code to access the smart action icon for review, modification, or documentation. Use <code>Ctrl+I</code> for inline Copilot chat.</p>
+      <div style="margin-top:12px;">
+        <span class="tool-badge copilot">Auto-complete</span>
+        <span class="tool-badge copilot">Smart Actions</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p><strong>Agent Mode vs. Ask Mode:</strong> In Ask Mode, use <code>@mssql</code> or <code>@pgsql</code> explicitly. In Agent Mode, Copilot auto-detects the MSSQL/PostgreSQL tools when those extensions are active &mdash; no prefix needed. Agent Mode also handles connections through natural language without requiring a pre-established profile.</p>
+  </div>
+
+  <h3 class="h4 mt-4 mb-3">Agent Mode Tool Categories (MSSQL)</h3>
+  <table class="gov-table">
+    <thead><tr><th>Category</th><th>Tools</th><th>Example Prompt</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Connection Management</strong></td>
+        <td><code>connect</code>, <code>disconnect</code>, <code>change_database</code>, <code>list_servers</code>, <code>list_databases</code>, <code>get_connection_details</code></td>
+        <td>"Connect to my LocalDev environment"</td>
+      </tr>
+      <tr>
+        <td><strong>Schema Exploration</strong></td>
+        <td><code>show_schema</code>, <code>list_schemas</code>, <code>list_tables</code>, <code>list_views</code>, <code>list_functions</code></td>
+        <td>"Show me all tables in the current database"</td>
+      </tr>
+      <tr>
+        <td><strong>Query Execution</strong></td>
+        <td><code>run_query</code></td>
+        <td>"Give me the top 5 users by task count"</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 3: MSSQL FEATURES -->
+<!-- ============================================================== -->
+<section id="mssql-features" class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">MSSQL Extension &mdash; Copilot Features</h2>
+  <p class="section-lead">The MSSQL extension ships with 11 Copilot-powered capabilities purpose-built for SQL Server, Azure SQL, and Fabric SQL.</p>
+
+  <div class="grid-3" style="margin-bottom:24px;">
+    <div class="feature-card sql-card">
+      <h3>&#x1F50D; Schema Explorer &amp; Designer</h3>
+      <p>Create, reverse-engineer, and evolve schemas. Generate CREATE TABLE, ORM models, migration scripts, and validation rules from natural language.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F4DD; Smart Query Builder</h3>
+      <p>Build complex queries from plain English. Time-based analysis, multi-table joins, business insights, and ORM-aware generation across Prisma, EF Core, Sequelize, and SQLAlchemy.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x26A1; Query Optimizer Assistant</h3>
+      <p>Identify inefficient queries, interpret execution plans in plain English, suggest indexing strategies, restructure queries with CTEs, and optimize ORM queries.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F4BB; Code Generation</h3>
+      <p>Generate T-SQL scripts, stored procedures, views, ORM migrations, and full-stack application code (Azure Functions, Node.js, Django, Next.js, Blazor).</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F4A1; Business Logic Explainer</h3>
+      <p>Explain stored procedures, views, UDFs, and ORM queries in natural language. Document business rules, debug procedural logic, and onboard new team members.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F6E1; Security Analyzer</h3>
+      <p>Detect SQL injection vulnerabilities, review access control, recommend data masking, and suggest encryption strategies. Works with T-SQL, Python, JavaScript, and ORMs.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F9EA; Test Data Generator</h3>
+      <p>Generate schema-aware INSERT statements or ORM seeders. Infer schemas from JSON, CSV, or TXT files. Create themed test data for development environments.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F310; Localization Helper</h3>
+      <p>Suggest collation settings, Unicode usage, and query patterns for multi-language and region-specific requirements.</p>
+    </div>
+    <div class="feature-card sql-card">
+      <h3>&#x1F4AC; Chat &amp; Inline Suggestions</h3>
+      <p>Conversational <code>@mssql</code> chat for schema exploration, query writing, and relationship explanation. Plus real-time inline completions as you type T-SQL.</p>
+    </div>
+  </div>
+
+  <div class="callout-sql callout">
+    <p><strong>Supported Platforms:</strong> SQL Server 2019/2022/2025 (Windows, Linux, containers), Azure SQL Database, Azure SQL Managed Instance, SQL Server on Azure VMs, SQL database in Fabric, Fabric Data Warehouse, and Fabric Lakehouse SQL analytics endpoint.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 4: POSTGRESQL FEATURES -->
+<!-- ============================================================== -->
+<section id="pgsql-features" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">PostgreSQL Extension &mdash; Features</h2>
+  <p class="section-lead">The PostgreSQL extension for VS Code brings full database development capabilities with Copilot integration for any PostgreSQL instance.</p>
+
+  <div class="grid-3" style="margin-bottom:24px;">
+    <div class="feature-card pg-card">
+      <h3>&#x1F4AC; Copilot <code>@pgsql</code> Agent</h3>
+      <p>Chat with your database in Ask mode using the <code>@pgsql</code> agent. Schema-aware, context-driven assistance for PostgreSQL development.</p>
+    </div>
+    <div class="feature-card pg-card">
+      <h3>&#x1F916; Agent Mode Tools</h3>
+      <p>Run SQL queries, create tables, design schemas, import CSV files, and more &mdash; all through Copilot Agent Mode with full tool integration.</p>
+    </div>
+    <div class="feature-card pg-card">
+      <h3>&#x1F4CA; Query Plan Visualization</h3>
+      <p>Explore EXPLAIN output in four synchronized views: interactive node graph, icicle chart, sortable table, and raw source. Color-coded severity with Copilot analysis.</p>
+    </div>
+    <div class="feature-card pg-card">
+      <h3>&#x1F5FA; Schema Visualization</h3>
+      <p>Visualize database schemas directly in VS Code with interactive diagrams showing tables, relationships, and data types.</p>
+    </div>
+    <div class="feature-card pg-card">
+      <h3>&#x1F4C8; Server Dashboard &amp; Metrics Intelligence</h3>
+      <p>Monitor PostgreSQL server performance with built-in dashboards. Get intelligent insights and troubleshooting help via Copilot integration.</p>
+    </div>
+    <div class="feature-card pg-card">
+      <h3>&#x1F504; Oracle to PostgreSQL Migration</h3>
+      <p>AI-powered schema and application conversion from Oracle to Azure Database for PostgreSQL. Automatic transformation of tables, views, stored procedures, functions, and triggers.</p>
+    </div>
+  </div>
+
+  <div class="callout-pg callout">
+    <p><strong>Azure Integration:</strong> Browse Azure to find and connect to Azure Database for PostgreSQL servers with password or Entra authentication. Create, manage, start, stop, and configure firewall rules directly from VS Code. Create Azure HorizonDB clusters.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 5: DATA API BUILDER -->
+<!-- ============================================================== -->
+<section id="data-api-builder" class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">Data API Builder (Preview)</h2>
+  <p class="section-lead">Turn your database tables into production-ready REST, GraphQL, and MCP endpoints without writing a single line of code. Built directly into the MSSQL extension.</p>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div>
+      <h3 class="h4 mb-3">How It Works</h3>
+      <div class="workflow-step">
+        <span class="step-number">1</span>
+        <div class="step-content">
+          <h4>Select Entities</h4>
+          <p>Choose tables from your connected database. Filter by schema, toggle individual entities, and configure CRUD permissions per table.</p>
+        </div>
+      </div>
+      <div class="workflow-step">
+        <span class="step-number">2</span>
+        <div class="step-content">
+          <h4>Choose API Types</h4>
+          <p>Select REST, GraphQL, MCP, or any combination. Configure advanced settings like custom REST paths and GraphQL type names.</p>
+        </div>
+      </div>
+      <div class="workflow-step">
+        <span class="step-number">3</span>
+        <div class="step-content">
+          <h4>Preview &amp; Deploy</h4>
+          <p>Review the generated JSON configuration, then deploy locally as a Docker container. Test immediately with Swagger UI or GraphQL playground.</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">Copilot Integration</h3>
+      <p style="font-size:14px;color:#656d76;line-height:1.6;margin-bottom:16px;">Use natural language to configure Data API builder. The chat panel stays synced with the visual UI &mdash; changes in either direction update both.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Enable all SalesLT entities for read operations</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Expose only the Customer and Product tables with full CRUD permissions</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Can you also enable MCP for the Data API builder API?</code>
+      </div>
+
+      <h4 style="margin-top:20px;font-size:15px;">Generated Endpoints</h4>
+      <table class="gov-table">
+        <thead><tr><th>API Type</th><th>URL Pattern</th><th>Testing UI</th></tr></thead>
+        <tbody>
+          <tr><td>REST</td><td><code>http://localhost:{port}/api</code></td><td>Swagger UI</td></tr>
+          <tr><td>GraphQL</td><td><code>http://localhost:{port}/graphql</code></td><td>Nitro Playground</td></tr>
+          <tr><td>MCP</td><td><code>http://localhost:{port}/mcp</code></td><td>Adds to <code>.vscode/mcp.json</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout-blue callout">
+    <p><strong>MCP Endpoint:</strong> When you enable the MCP API type, Data API builder generates a Model Context Protocol server. Selecting "Add to VS Code" writes the configuration to <code>.vscode/mcp.json</code>, making your database accessible to Copilot and other AI tools through Data API builder.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 6: SCHEMA DESIGNER -->
+<!-- ============================================================== -->
+<section id="schema-designer" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">Schema Designer with GitHub Copilot (Preview)</h2>
+  <p class="section-lead">Design, evolve, and review database schemas using natural language in a visual canvas. Copilot drives the diagram, T-SQL generation, and change review workflow.</p>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div>
+      <h3 class="h4 mb-3">Capabilities</h3>
+      <ul style="font-size:14px;color:#656d76;line-height:2;">
+        <li>Create schemas from natural language descriptions with auto-generated tables, columns, and relationships</li>
+        <li>Evolve existing schemas by adding, modifying, or removing tables and columns conversationally</li>
+        <li>Review each AI-proposed change individually with accept/undo controls</li>
+        <li>View a schema diff showing all pending changes before applying to the database</li>
+        <li>Bootstrap entire application schemas on an empty database from a single prompt</li>
+        <li>Import external artifacts (JSON data, documents, images) and generate schema elements</li>
+        <li>Validation guardrails: missing primary keys, invalid data types, normalization issues, duplicates, broken FK references</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">Example Prompts</h3>
+      <div class="prompt-block">
+        <div class="prompt-label">Create From Scratch</div>
+        <code>Build a library management system with tables for Books, Authors, Members, and BookLoans</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Evolve Schema</div>
+        <code>Add a description column of type NVARCHAR(500) to the Books table</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Import Artifact</div>
+        <code>Import this JSON and model it as tables</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Bootstrap App</div>
+        <code>Design an e-commerce schema with Products, Categories, Orders, OrderItems, and Customers</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p><strong>Entry Points:</strong> Right-click a database node in Object Explorer and select <em>Schema Designer</em>, then open the Copilot chat panel. Or right-click and select <em>Open in Copilot Agent Mode</em> and ask Copilot to open the Schema Designer for you.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 7: QUERY OPTIMIZATION -->
+<!-- ============================================================== -->
+<section id="query-optimization" class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">Query Optimization with AI</h2>
+  <p class="section-lead">From identifying slow queries to interpreting execution plans and recommending indexes, Copilot turns query tuning from a specialist skill into a conversation.</p>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div>
+      <h3 class="h4 mb-3">What Copilot Can Do</h3>
+      <ul style="font-size:14px;color:#656d76;line-height:2;">
+        <li>Rewrite inefficient queries with proper JOINs and index-friendly predicates</li>
+        <li>Suggest indexing strategies (composite, covering, filtered)</li>
+        <li>Interpret execution plans in plain English (both estimated and actual)</li>
+        <li>Restructure queries using CTEs for readability and performance</li>
+        <li>Optimize ORM queries across Prisma, EF Core, Sequelize, and SQLAlchemy</li>
+        <li>Detect N+1 query problems in code-first workflows</li>
+        <li>Compare execution metrics before and after optimization</li>
+      </ul>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Optimize Query</div>
+        <code>Optimize the following query:
+
+SELECT *
+FROM tasks
+WHERE project_id IN (
+    SELECT id FROM projects WHERE name LIKE '%Mobile%'
+)
+AND assigned_user_id IN (
+    SELECT id FROM users WHERE role = 'engineer'
+)
+ORDER BY created_at DESC;</code>
+      </div>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">Execution Plan Analysis</h3>
+      <p style="font-size:14px;color:#656d76;line-height:1.6;margin-bottom:16px;">Both extensions provide execution plan visualization. Share the plan with Copilot for plain-English interpretation.</p>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt (MSSQL)</div>
+        <code>According to the execution plan, this query uses a nested loop join affecting performance. Explain why and suggest optimizations.</code>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt (PostgreSQL)</div>
+        <code>Run EXPLAIN ANALYZE on this query against the PostgreSQL taskify database and tell me what's slow.</code>
+      </div>
+
+      <h4 style="margin-top:20px;font-size:15px;">CTE Restructuring</h4>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Rewrite this query using common table expressions (CTEs) to improve clarity:
+
+SELECT * FROM (
+  SELECT ProductID, SUM(Quantity) AS TotalQuantity
+  FROM Sales GROUP BY ProductID
+) AS SubQuery;</code>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 8: CODE GENERATION -->
+<!-- ============================================================== -->
+<section id="code-generation" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">Code Generation</h2>
+  <p class="section-lead">Generate SQL scripts, ORM migrations, and full-stack application code from your connected database schema.</p>
+
+  <div class="grid-3" style="margin-bottom:24px;">
+    <div>
+      <h3 class="h4 mb-3">T-SQL Generation</h3>
+      <div class="prompt-block">
+        <div class="prompt-label">Script Tables</div>
+        <code>Script out all the tables in the dbo schema as CREATE TABLE statements</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Stored Procedure</div>
+        <code>Write a stored procedure called usp_ArchiveCompletedTasks that moves done tasks older than 90 days to an archive table with TRY/CATCH</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">ALTER TABLE</div>
+        <code>Add a priority column to tasks with values low, medium, high, critical and a default of medium</code>
+      </div>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">ORM Migrations</h3>
+      <div class="prompt-block">
+        <div class="prompt-label">Entity Framework</div>
+        <code>Generate an Entity Framework Core DbContext and model classes for the dbo schema</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Prisma</div>
+        <code>Update my Prisma model to define a new Order model with id, customer_id, and order_date fields</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">SQLAlchemy</div>
+        <code>Generate a SQLAlchemy model class for the tasks table, including columns and data types</code>
+      </div>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">Full-Stack Scaffolding</h3>
+      <div class="prompt-block">
+        <div class="prompt-label">Node.js + Express</div>
+        <code>Generate a REST API using Node.js with Express that connects to my SQL Database with Prisma ORM</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Azure Functions</div>
+        <code>Generate Azure Functions with SQL Bindings for CRUD operations on the tasks table</code>
+      </div>
+      <div class="prompt-block">
+        <div class="prompt-label">Django</div>
+        <code>Scaffold a Django backend with REST Framework for the tasks table</code>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 9: SECURITY -->
+<!-- ============================================================== -->
+<section id="security" class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">Security Analysis</h2>
+  <p class="section-lead">Copilot detects SQL injection vulnerabilities, reviews access control patterns, and recommends data protection strategies across T-SQL and application code.</p>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div>
+      <h3 class="h4 mb-3">SQL Injection Detection</h3>
+      <div class="code-block"><code><span class="comment">-- Copilot identifies this as CRITICAL: SQL Injection vulnerability</span>
+<span class="keyword">query</span> = f<span class="string">"SELECT * FROM users WHERE id = {user_input}"</span>
+
+<span class="comment">-- Copilot recommends parameterized queries:</span>
+<span class="comment">-- SQL Server</span>
+<span class="keyword">EXEC</span> sp_executesql
+  N<span class="string">'SELECT * FROM users WHERE id = @id'</span>,
+  N<span class="string">'@id INT'</span>,
+  @id = @user_id;</code></div>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Security Review</div>
+        <code>Review the usp_GetUserData stored procedure for SQL injection vulnerabilities and suggest secure alternatives.</code>
+      </div>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">Additional Security Capabilities</h3>
+      <ul style="font-size:14px;color:#656d76;line-height:2.2;">
+        <li><strong>Access Control Review:</strong> Evaluate role-based permissions, schema ownership, and procedure security (DEFINER vs INVOKER)</li>
+        <li><strong>Data Protection:</strong> Recommend data masking, Always Encrypted, and TDE configurations</li>
+        <li><strong>Authentication:</strong> Guide Entra ID integration, managed identity usage, and secure connection strings</li>
+        <li><strong>Sensitive Data:</strong> Identify SELECT * on tables with PII and recommend column-specific access views</li>
+        <li><strong>ORM Security:</strong> Detect unsafe patterns in Prisma, Sequelize, EF Core, and SQLAlchemy code</li>
+      </ul>
+
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>What SQL Server options should I enable to protect customer data when using EF Core? Consider Always Encrypted, TDE, and connection encryption.</code>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 10: SCENARIOS -->
+<!-- ============================================================== -->
+<section id="scenarios" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">Real-World Scenarios</h2>
+  <p class="section-lead">Practical workflows that demonstrate how these tools work together for database engineers. Each scenario maps to capabilities covered above.</p>
+
+  <h3 class="h4 mb-3">Post-Migration Validation</h3>
+  <p style="font-size:14px;color:#656d76;margin-bottom:16px;">After migrating between database engines, use both MCP servers simultaneously to validate data parity without leaving VS Code.</p>
+
+  <div class="grid-2" style="margin-bottom:32px;">
+    <div class="scenario-card">
+      <h4>&#x1F50D; AI-Assisted Data Validation</h4>
+      <p>Compare row counts, verify specific records, and check referential integrity across PostgreSQL and SQL Server using both MCP servers in a single Copilot conversation.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Compare the row counts of all tables between my PostgreSQL and SQL Server taskify databases.</code>
+      </div>
+      <span class="tool-badge mcp">PostgreSQL MCP</span>
+      <span class="tool-badge mcp">MSSQL MCP</span>
+    </div>
+    <div class="scenario-card">
+      <h4>&#x1F504; Cross-Dialect SQL Translation</h4>
+      <p>Translate queries between PostgreSQL and T-SQL in real time. Copilot catches GROUP BY strictness, FILTER vs CASE, UUID vs UNIQUEIDENTIFIER, and cascade path conflicts.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Convert this PostgreSQL query to T-SQL and explain what breaks:
+SELECT COUNT(t.id) FILTER (WHERE t.status = 'done')::int AS done_count FROM tasks t;</code>
+      </div>
+      <span class="tool-badge copilot">Chat</span>
+    </div>
+  </div>
+
+  <h3 class="h4 mb-3">Schema &amp; Performance Engineering</h3>
+  <div class="grid-2" style="margin-bottom:32px;">
+    <div class="scenario-card">
+      <h4>&#x1F3D7; Stored Procedure Generation &amp; Review</h4>
+      <p>Generate complex T-SQL procedures from business requirements, review for deadlocks and isolation concerns, validate with the SQL project build, and execute via MCP.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Write a stored procedure called usp_ArchiveCompletedTasks that moves all tasks with status 'done' not updated in 90 days to an archive table, logs the count, and runs in a transaction with TRY/CATCH.</code>
+      </div>
+      <span class="tool-badge copilot">Agent Mode</span>
+      <span class="tool-badge mssql">SQL Project</span>
+    </div>
+    <div class="scenario-card">
+      <h4>&#x1F4A5; Schema Change Impact Analysis</h4>
+      <p>Propose a schema change and let Copilot trace the blast radius across the entire stack: schema DDL, API routes, seed data, frontend components, and tests.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>I want to add a priority column to the tasks table with values low, medium, high, critical. What is the impact across the Taskify codebase?</code>
+      </div>
+      <span class="tool-badge copilot">Agent Mode</span>
+    </div>
+  </div>
+
+  <h3 class="h4 mb-3">Everyday AI-Assisted SQL</h3>
+  <div class="grid-2" style="margin-bottom:32px;">
+    <div class="scenario-card">
+      <h4>&#x1F4AC; Natural Language Query Builder</h4>
+      <p>Write SQL from plain English business questions, executed live against your database via MCP. The AI handles dialect differences and removes the translation step.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>Show me each project with a breakdown of how many tasks are in each status column, and include the percentage complete.</code>
+      </div>
+      <span class="tool-badge mcp">MCP Execute</span>
+    </div>
+    <div class="scenario-card">
+      <h4>&#x1F4CA; Conversational Report Writing</h4>
+      <p>Build complex reporting queries iteratively through conversation. Each refinement builds on the previous result. Turn the final version into a reusable view.</p>
+      <div class="prompt-block">
+        <div class="prompt-label">Copilot Prompt</div>
+        <code>My manager wants a project health dashboard. Start with task counts by status per project, then add average task age in days.</code>
+      </div>
+      <span class="tool-badge copilot">Iterative Chat</span>
+    </div>
+  </div>
+
+  <h3 class="h4 mb-3">Chat-Driven Schema Explorer</h3>
+  <div class="scenario-card" style="max-width:720px;">
+    <h4>&#x1F5FA; Interactive Database Documentation</h4>
+    <p>Turn Copilot into a living schema documentation tool. Ask about tables, columns, relationships, indexes, and missing optimizations &mdash; without leaving the chat window or memorizing <code>sp_help</code>.</p>
+    <div class="prompt-block">
+      <div class="prompt-label">Copilot Prompt</div>
+      <code>What tables exist in my SQL Server taskify database? List their columns and relationships. Then show the relationships as a Mermaid ERD diagram.</code>
+    </div>
+    <span class="tool-badge mssql">MSSQL MCP</span>
+    <span class="tool-badge copilot">Mermaid</span>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 11: COPILOT SKILLS -->
+<!-- ============================================================== -->
+<section id="copilot-skills" class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">Copilot Custom Skills for SQL</h2>
+  <p class="section-lead">Installable GitHub Copilot skills extend AI capabilities with domain-specific expertise. These two skills provide production-grade SQL optimization and code review workflows.</p>
+
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="feature-card" style="border-left: 4px solid var(--brand-copilot);">
+      <h3>&#x26A1; SQL Optimization Skill</h3>
+      <p style="margin-bottom:12px;">Universal SQL performance optimization across MySQL, PostgreSQL, SQL Server, and Oracle. Provides execution plan analysis, pagination optimization, batch operations, and monitoring guidance.</p>
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;">Core Areas</h4>
+      <ul style="font-size:13px;color:#656d76;line-height:1.8;padding-left:16px;">
+        <li>Query performance analysis with bad/good pattern pairs</li>
+        <li>Index strategy optimization (composite, filtered, covering)</li>
+        <li>Subquery elimination with window functions</li>
+        <li>JOIN ordering and optimization</li>
+        <li>Pagination and batch operation patterns</li>
+      </ul>
+      <a class="ref-link" href="https://awesome-copilot.github.com/skills/#file=skills%2Fsql-optimization%2FSKILL.md" target="_blank">View Skill on awesome-copilot.github.com &rarr;</a>
+    </div>
+    <div class="feature-card" style="border-left: 4px solid var(--brand-copilot);">
+      <h3>&#x1F6E1; SQL Code Review Skill</h3>
+      <p style="margin-bottom:12px;">Comprehensive security, maintainability, and code quality analysis across all SQL databases. Focuses on SQL injection prevention, access control, code standards, and anti-pattern detection.</p>
+      <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;">Review Areas</h4>
+      <ul style="font-size:13px;color:#656d76;line-height:1.8;padding-left:16px;">
+        <li>SQL injection vulnerability detection</li>
+        <li>Access control and permission review</li>
+        <li>Data protection and audit logging</li>
+        <li>Query structure and performance analysis</li>
+        <li>Index strategy review and optimization</li>
+        <li>Naming conventions and code standards</li>
+      </ul>
+      <a class="ref-link" href="https://awesome-copilot.github.com/skills/#file=skills%2Fsql-code-review%2FSKILL.md" target="_blank">View Skill on awesome-copilot.github.com &rarr;</a>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p><strong>Using Skills:</strong> Copilot Skills are markdown instruction files that can be installed into your repository under <code>.github/skills/</code>. When a relevant task is detected, Copilot automatically loads the skill's specialized knowledge to provide higher-quality, domain-specific guidance.</p>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 12: QUICK REFERENCE -->
+<!-- ============================================================== -->
+<section id="quick-reference" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">Quick Reference: Prompts by Workflow</h2>
+  <p class="section-lead">Copy-paste these prompts into Copilot Chat. Prefix with <code>@mssql</code> or <code>@pgsql</code> in Ask mode. In Agent Mode, no prefix is needed.</p>
+
+  <table class="gov-table">
+    <thead><tr><th>Workflow</th><th>Prompt Example</th><th>Copilot Feature</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Explore Schema</strong></td>
+        <td><code>Show all objects in the dbo schema, grouped by type</code></td>
+        <td>Schema Explorer</td>
+      </tr>
+      <tr>
+        <td><strong>Write Query</strong></td>
+        <td><code>Write a query to list all users with more than 5 assigned tasks</code></td>
+        <td>Smart Query Builder</td>
+      </tr>
+      <tr>
+        <td><strong>Optimize Query</strong></td>
+        <td><code>Suggest indexing improvements for this query: SELECT * FROM tasks WHERE status = 'todo'</code></td>
+        <td>Query Optimizer</td>
+      </tr>
+      <tr>
+        <td><strong>Generate Procedure</strong></td>
+        <td><code>Write a stored procedure to archive completed tasks older than 90 days</code></td>
+        <td>Code Generation</td>
+      </tr>
+      <tr>
+        <td><strong>Explain Logic</strong></td>
+        <td><code>Explain what the vw_ProjectCompletionSummary view does and the business rules it implements</code></td>
+        <td>Business Logic Explainer</td>
+      </tr>
+      <tr>
+        <td><strong>Security Review</strong></td>
+        <td><code>Check this stored procedure for SQL injection vulnerabilities and suggest fixes</code></td>
+        <td>Security Analyzer</td>
+      </tr>
+      <tr>
+        <td><strong>Generate Test Data</strong></td>
+        <td><code>Generate 20 realistic sample rows for the users table with varied roles and avatar colors</code></td>
+        <td>Test Data Generator</td>
+      </tr>
+      <tr>
+        <td><strong>ORM Migration</strong></td>
+        <td><code>Generate a Prisma migration to add an email column to the users table</code></td>
+        <td>Code Generation</td>
+      </tr>
+      <tr>
+        <td><strong>Data Validation</strong></td>
+        <td><code>Compare row counts of all tables between PostgreSQL and SQL Server taskify databases</code></td>
+        <td>Dual MCP</td>
+      </tr>
+      <tr>
+        <td><strong>Dialect Translation</strong></td>
+        <td><code>Convert this PostgreSQL DDL to T-SQL. Call out every syntax difference.</code></td>
+        <td>Chat</td>
+      </tr>
+      <tr>
+        <td><strong>Create API</strong></td>
+        <td><code>Enable all dbo entities for read operations with REST and MCP endpoints</code></td>
+        <td>Data API Builder</td>
+      </tr>
+      <tr>
+        <td><strong>Design Schema</strong></td>
+        <td><code>Build a task management schema with users, projects, tasks, and comments with proper relationships</code></td>
+        <td>Schema Designer</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 13: POSTGRESQL ↔ SQL SERVER CHEAT SHEET -->
+<!-- ============================================================== -->
+<section class="section">
+<div class="container-xl px-3">
+  <h2 class="section-title">PostgreSQL &#x2194; SQL Server Syntax Cheat Sheet</h2>
+  <p class="section-lead">Key syntax differences Copilot handles for you during cross-dialect translation. Useful reference when migrating or working across both platforms.</p>
+
+  <table class="gov-table">
+    <thead><tr><th>PostgreSQL</th><th>SQL Server (T-SQL)</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>UUID</code></td><td><code>UNIQUEIDENTIFIER</code></td><td>Native type in both engines</td></tr>
+      <tr><td><code>gen_random_uuid()</code></td><td><code>NEWID()</code></td><td>UUID default value generation</td></tr>
+      <tr><td><code>TEXT</code></td><td><code>NVARCHAR(MAX)</code></td><td>Use <code>NVARCHAR(255)</code> where bounded</td></tr>
+      <tr><td><code>TIMESTAMPTZ</code></td><td><code>DATETIMEOFFSET</code></td><td>Timezone-aware datetime</td></tr>
+      <tr><td><code>NOW()</code></td><td><code>SYSDATETIMEOFFSET()</code></td><td>Current timestamp with timezone</td></tr>
+      <tr><td><code>COUNT(x)::int</code></td><td><code>CAST(COUNT(x) AS INT)</code></td><td>Different cast syntax</td></tr>
+      <tr><td><code>COUNT(x) FILTER (WHERE ...)</code></td><td><code>SUM(CASE WHEN ... THEN 1 ELSE 0 END)</code></td><td>T-SQL lacks FILTER clause</td></tr>
+      <tr><td><code>RETURNING *</code></td><td><code>OUTPUT INSERTED.*</code></td><td>Return inserted/updated rows</td></tr>
+      <tr><td><code>$1, $2, $3</code> (positional)</td><td><code>@param1, @param2</code> (named)</td><td>Parameter binding style</td></tr>
+      <tr><td><code>INSERT ... ON CONFLICT DO NOTHING</code></td><td><code>IF NOT EXISTS ... INSERT</code></td><td>Conditional insert pattern</td></tr>
+      <tr><td><code>GROUP BY primary_key</code></td><td>All non-aggregated columns</td><td>T-SQL requires full GROUP BY</td></tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- SECTION 14: REFERENCES -->
+<!-- ============================================================== -->
+<section id="references" class="section section-alt">
+<div class="container-xl px-3">
+  <h2 class="section-title">References &amp; Documentation</h2>
+  <p class="section-lead">Official Microsoft Learn documentation, extension marketplaces, and community resources.</p>
+
+  <div class="grid-3">
+    <div>
+      <h3 class="h4 mb-3">MSSQL Extension &amp; Copilot</h3>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/overview?view=sql-server-ver17" target="_blank">GitHub Copilot for MSSQL Extension (Overview)</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/agent-mode?view=sql-server-ver17" target="_blank">Agent Mode</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/inline-copilot-suggestions?view=sql-server-ver17" target="_blank">Chat &amp; Inline Suggestions</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/code-generation?view=sql-server-ver17" target="_blank">Code Generation</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/schema-explorer-designer?view=sql-server-ver17" target="_blank">Schema Explorer &amp; Designer</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-schema-designer-copilot?view=sql-server-ver17" target="_blank">Schema Designer with Copilot (Preview)</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/smart-query-builder?view=sql-server-ver17" target="_blank">Smart Query Builder</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/query-optimizer-assistant?view=sql-server-ver17" target="_blank">Query Optimizer Assistant</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/business-logic-explainer?view=sql-server-ver17" target="_blank">Business Logic Explainer</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/security-analyzer?view=sql-server-ver17" target="_blank">Security Analyzer</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/localization-formatting-helper?view=sql-server-ver17" target="_blank">Localization &amp; Formatting Helper</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/test-and-mocking-data-generator?view=sql-server-ver17" target="_blank">Test &amp; Mocking Data Generator</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/slash-commands?view=sql-server-ver17" target="_blank">Slash Commands</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/limitations-and-known-issues?view=sql-server-ver17" target="_blank">Limitations &amp; Known Issues</a>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">PostgreSQL &amp; Data API Builder</h3>
+      <a class="ref-link" href="https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-pgsql" target="_blank">PostgreSQL Extension (Marketplace)</a>
+      <a class="ref-link" href="https://aka.ms/pg-vscode-docs" target="_blank">PostgreSQL Extension Documentation</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-data-api-builder?view=sql-server-ver17" target="_blank">Data API Builder (Preview)</a>
+      <a class="ref-link" href="https://aka.ms/dab/" target="_blank">What is Data API Builder?</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/azure/data-api-builder" target="_blank">Data API Builder Documentation</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-schema-compare?view=sql-server-ver17" target="_blank">Schema Compare</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-data-tier-application?view=sql-server-ver17" target="_blank">DACPAC &amp; BACPAC Import/Export</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-local-container?view=sql-server-ver17" target="_blank">Local SQL Server Container</a>
+
+      <h3 class="h4 mt-4 mb-3">Copilot Skills</h3>
+      <a class="ref-link" href="https://awesome-copilot.github.com/skills/#file=skills%2Fsql-optimization%2FSKILL.md" target="_blank">SQL Optimization Skill</a>
+      <a class="ref-link" href="https://awesome-copilot.github.com/skills/#file=skills%2Fsql-code-review%2FSKILL.md" target="_blank">SQL Code Review Skill</a>
+    </div>
+    <div>
+      <h3 class="h4 mb-3">GitHub Copilot &amp; Training</h3>
+      <a class="ref-link" href="https://docs.github.com/copilot" target="_blank">GitHub Copilot Documentation</a>
+      <a class="ref-link" href="https://code.visualstudio.com/docs/copilot/customization/mcp-servers" target="_blank">MCP Servers in VS Code</a>
+      <a class="ref-link" href="https://code.visualstudio.com/docs/copilot/chat/copilot-chat" target="_blank">VS Code Copilot Chat Modes</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/training/modules/introduction-to-github-copilot/" target="_blank">Training: Introduction to GitHub Copilot</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/training/modules/challenge-github-copilot-sql/" target="_blank">Training: Challenge Copilot with SQL</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/training/modules/github-copilot-agent-mode/" target="_blank">Training: Building Apps with Agent Mode</a>
+      <a class="ref-link" href="https://learn.microsoft.com/en-us/credentials/certifications/github-copilot/" target="_blank">GitHub Copilot Certification</a>
+      <a class="ref-link" href="https://github.com/microsoft/vscode-mssql" target="_blank">MSSQL Extension Repository (GitHub)</a>
+      <a class="ref-link" href="https://github.com/microsoft/vscode-pgsql" target="_blank">PostgreSQL Extension Repository (GitHub)</a>
+      <a class="ref-link" href="https://aka.ms/vscode-mssql-copilot-feedback" target="_blank">Submit Feedback</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== -->
+<!-- FOOTER -->
+<!-- ============================================================== -->
+<footer class="footer">
+<div class="container-xl px-3">
+  <div class="grid-3">
+    <div>
+      <p style="font-weight:600;color:#f0f6fc;margin-bottom:8px;">GitHub Copilot for Database Engineers</p>
+      <p style="font-size:13px;">A consolidated guide for database engineers leveraging AI-assisted development with VS Code, GitHub Copilot, and Microsoft database extensions.</p>
+    </div>
+    <div>
+      <p style="font-weight:600;color:#f0f6fc;margin-bottom:8px;">Key Links</p>
+      <a href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/github-copilot/overview?view=sql-server-ver17" target="_blank">MSSQL + Copilot Overview</a><br>
+      <a href="https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-pgsql" target="_blank">PostgreSQL Extension</a><br>
+      <a href="https://learn.microsoft.com/en-us/sql/tools/visual-studio-code-extensions/mssql/mssql-data-api-builder?view=sql-server-ver17" target="_blank">Data API Builder</a><br>
+      <a href="https://docs.github.com/copilot" target="_blank">GitHub Copilot Docs</a>
+    </div>
+    <div>
+      <p style="font-weight:600;color:#f0f6fc;margin-bottom:8px;">Powered By</p>
+      <p style="font-size:13px;">
+        <a href="https://github.com/features/copilot" target="_blank">GitHub Copilot</a> &middot;
+        <a href="https://marketplace.visualstudio.com/items?itemName=ms-mssql.mssql" target="_blank">MSSQL Extension</a> &middot;
+        <a href="https://marketplace.visualstudio.com/items?itemName=ms-ossdata.vscode-pgsql" target="_blank">PostgreSQL Extension</a>
+      </p>
+      <p style="font-size:12px;margin-top:16px;">&copy; 2026 &middot; Built for database engineers</p>
+    </div>
+  </div>
+</div>
+</footer>
+
+</body>
+</html>
